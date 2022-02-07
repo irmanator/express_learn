@@ -3,6 +3,16 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const app = express();
+const cors = require('cors');
+
+app.use(
+	cors({
+		origin: 'http://localhost:8080', //only allows specific url with port
+		// origin: '*', //allows to all urls
+		methods:["GET"], //dah ga berlaku
+		credentials: true
+	})
+)
 
 const userRouter = require('./router/users.js');
 
