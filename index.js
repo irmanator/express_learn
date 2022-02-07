@@ -9,7 +9,7 @@ app.use(
 	cors({
 		origin: 'http://localhost:8080', //only allows specific url with port
 		// origin: '*', //allows to all urls
-		methods:["GET"], //dah ga berlaku
+		methods:["GET", "POST","DELETE", "PUT"], //dah ga berlaku
 		credentials: true
 	})
 )

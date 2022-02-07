@@ -22,7 +22,7 @@ router.delete('/tokendel', userController.tokendel);
 //grouping route
 router.route('/paket')
 	.get(JWTAccessCheck, userController.index) //ini pake JWT check
-	.post(JWTAccessCheck, userController.create);
+	.post(userController.create);
 
 //JWT with bearer TOKEN checking
 function JWTAccessCheck(req, res, next) {
