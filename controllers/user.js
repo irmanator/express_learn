@@ -1,5 +1,6 @@
 const md5 = require('md5');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 //users ini harusnya dari database dan masuk dalam model
 // let users = [
@@ -8,7 +9,6 @@ const bcrypt = require('bcrypt');
 // ]
 
 const User = require('../models/user');
-const { createIndexes } = require('../models/user');
 
 module.exports = {
 	index: ((req, res) => {
@@ -143,12 +143,14 @@ module.exports = {
 				console.log(user)
 			}
 		})
-		////manual mode
+		// manual mode, syntax ini menghapus data user yang ada di array
 		// users = users.filter(user => user.id != id)
 		// res.send(users)
 	},
 	login: async (req, res) => {
 		const user = await User.findOne({name: req.body.name});
+		// send.res(user);
+		// return;
 		if(!user){
 			res.json({
 				status: false,
@@ -156,12 +158,16 @@ module.exports = {
 			})
 		}else{
 			try {
-				// it will prevent timing attack
+				// bcrypt compare will prevent timing attack
 				const isMatch = await bcrypt.compare(req.body.password, user.pass);
 				if(isMatch){
+					//if match add JWT access token
+					// buat access token
+					const accessToken = jwt.sign({user: user.name}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1h'});
 					res.json({
 						status: true,
-						message: 'Login success'
+						message: 'Login success',
+						data: { accessToken: accessToken }
 					})
 				}else{
 					res.json({
@@ -175,4 +181,6 @@ module.exports = {
 		}
 	}
 }
+
+
 

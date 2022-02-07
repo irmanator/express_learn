@@ -28,7 +28,7 @@ app.use(myLogger);
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
-//feature routing users.js
+//feature routing users.js, didalamnya termasuk JWT, login, dll
 app.use(userRouter);
 
 // output json atau send yg netral
