@@ -1,5 +1,8 @@
 require('dotenv').config();
 
+// yang jadi masalah, main server ini pake model MVC
+// jadi kalo beda server akan susah
+
 const jwt = require('jsonwebtoken');
 const express = require('express');
 const { send } = require('express/lib/response');

@@ -12,8 +12,12 @@ router.put('/user/:id', JWTAccessCheck, userController.update);
 // delete menggunakan parameter ID
 router.delete('/user/:id', JWTAccessCheck, userController.delete);
 
-// delete menggunakan parameter ID
+// user login
 router.post('/user/login', userController.login);
+
+router.post('/token', userController.token);
+
+router.delete('/tokendel', userController.tokendel);
 
 //grouping route
 router.route('/paket')

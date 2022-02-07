@@ -10,6 +10,9 @@ const jwt = require('jsonwebtoken');
 
 const User = require('../models/user');
 
+//refresh tokens collector
+let refreshTokens = [];
+
 module.exports = {
 	index: ((req, res) => {
 		const userList = User.find({}, (err, users) => {
@@ -162,12 +165,13 @@ module.exports = {
 				const isMatch = await bcrypt.compare(req.body.password, user.pass);
 				if(isMatch){
 					//if match add JWT access token
-					// buat access token
-					const accessToken = jwt.sign({user: user.name}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1h'});
+					// buat access dan refresh token
+					const tokens = generateToken(user.name);
+					refreshTokens.push(tokens.refreshToken);
 					res.json({
 						status: true,
 						message: 'Login success',
-						data: { accessToken: accessToken }
+						data: tokens
 					})
 				}else{
 					res.json({
@@ -179,8 +183,27 @@ module.exports = {
 				console.log(error);
 			}
 		}
+	},
+	token: (req, res) => {
+		const refreshToken = req.body.token;
+		if(refreshToken == null) return res.sendStatus(401);
+		if(!refreshTokens.includes(refreshToken)) return res.sendStatus(403)
+		jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+			if(err) return res.sendStatus(403)
+			const accessToken = generateToken({name: user.name});
+			res.json({accessToken: accessToken.accessToken});
+		})
+	},
+	tokendel: (req, res) => {
+		const refreshToken = req.body.token;
+		refreshTokens = refreshTokens.filter(token => token !== refreshToken);
+		res.sendStatus(204); //successfully delete token
 	}
 }
 
-
+function generateToken(user) {
+	const accessToken = jwt.sign({user: user}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '15s'});
+	const refreshToken = jwt.sign({user: user}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: '30s'});
+	return {accessToken, refreshToken};
+};
 
