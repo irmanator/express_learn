@@ -7,6 +7,6 @@ const userSchema = new Schema({
     pass: String
 },{timestamps: true}); //memudahkan proses update dan delete
 
-mongoose.model('User', userSchema);
+mongoose.model('User', userSchema); //model name, schema name
 
 module.exports = mongoose.model('User');
