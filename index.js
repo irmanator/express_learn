@@ -27,7 +27,7 @@ const userRouter = require('./router/users.js');
 // 	console.log("could not connect");
 //   } //dipindah ke dotenv
 try {
-	 mongoose.connect(process.env.DB_URLUSER);
+	 mongoose.connect(process.env.DB_URLsavitree_cardataadmin);
   } catch (error) {
 	handleError(error);
   }
