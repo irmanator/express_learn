@@ -1,0 +1,2 @@
+- siapkan mongoDB dari laragon atau apapun
+- baru aktifkan server

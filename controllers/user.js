@@ -196,14 +196,16 @@ module.exports = {
 	},
 	tokendel: (req, res) => {
 		const refreshToken = req.body.token;
+		if(refreshToken == null) return res.sendStatus(401);
+		accessToken = null;
 		refreshTokens = refreshTokens.filter(token => token !== refreshToken);
 		res.sendStatus(204); //successfully delete token
 	}
 }
 
 function generateToken(user) {
-	const accessToken = jwt.sign({user: user}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '15s'});
-	const refreshToken = jwt.sign({user: user}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: '30s'});
+	const accessToken = jwt.sign({user: user}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '60s'});
+	const refreshToken = jwt.sign({user: user}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: '120s'});
 	return {accessToken, refreshToken};
 };
 

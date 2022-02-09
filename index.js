@@ -7,8 +7,8 @@ const cors = require('cors');
 
 app.use(
 	cors({
-		origin: 'http://localhost:8080', //only allows specific url with port
-		// origin: '*', //allows to all urls
+		// origin: 'http://localhost:8080', //only allows specific url with port
+		origin: '*', //allows to all urls
 		methods:["GET", "POST","DELETE", "PUT"], //dah ga berlaku
 		credentials: true
 	})
@@ -17,7 +17,20 @@ app.use(
 const userRouter = require('./router/users.js');
 
 //connect to mongodb
-mongoose.connect(process.env.DB_URL); //dipindah ke dotenv
+// try {
+// 	mongoose.connect(process.env.DB_URLUSER, { // yang DB_URLUSER mongodb cloud cuman bisa find, insert, update, TANPA delete
+// 		useNewUrlParser: true,
+// 		useUnifiedTopology: true
+// 	  }, () =>
+// 	  console.log("connected"));
+//   } catch (error) {
+// 	console.log("could not connect");
+//   } //dipindah ke dotenv
+try {
+	 mongoose.connect(process.env.DB_URLUSER);
+  } catch (error) {
+	handleError(error);
+  }
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function() {
