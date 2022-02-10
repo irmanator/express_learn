@@ -4,6 +4,7 @@ const { Schema } = mongoose;
 const userSchema = new Schema({
     name: {type: String, required: true},
     email: String,
+    kode: String,
     pass: String
 },{timestamps: true}); //memudahkan proses update dan delete
 

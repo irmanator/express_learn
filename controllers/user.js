@@ -15,6 +15,8 @@ let refreshTokens = [];
 
 module.exports = {
 	index: ((req, res) => {
+		const kodeuser = decodeToken(req.headers.authorization).payload.kode;
+		if (kodeuser === 'spidol'){
 		const userList = User.find({}, (err, users) => {
 			if(err) {
 				console.log(err);
@@ -34,12 +36,18 @@ module.exports = {
 				}
 			}
 		})
+	}else{
+		res.json({
+			status: false,
+			message: 'Unauthorized'
+		})
+	}
 	}),			
 	create: (async (req, res) => {
-		// console.log(req.body.password);
+		// console.log(req.body.pass);
 		// return;
 		try {
-			var hashPass = await bcrypt.hash(req.body.password, 10);
+			var hashPass = await bcrypt.hash(req.body.pass, 10);
 		} catch (error) {
 			console.log(error);
 		}
@@ -48,7 +56,7 @@ module.exports = {
 		// const userData = new User({
 		// 	name: req.body.name,
 		// 	email: req.body.email,
-		// 	pass: md5(req.body.password)	//mustinya harus di encrypt
+		// 	pass: md5(req.body.pass)	//mustinya harus di encrypt
 
 		// })
 		// userData.save((err, data) => {
@@ -72,8 +80,8 @@ module.exports = {
 		User.create({
 			name: req.body.name,
 			email: req.body.email,
+			kode: req.body.kode,
 			pass: hashPass
-			// pass: md5(req.body.password)
 		},(err, data) => {
 			if(err){
 				res.json({
@@ -96,7 +104,7 @@ module.exports = {
 	User.updateOne({_id: id}, {
 		name: req.body.name,
 		email: req.body.email,
-		pass: md5(req.body.password)
+		pass: md5(req.body.pass)
 	}, (err, data) => {
 		if(err){
 			res.json({
@@ -151,7 +159,7 @@ module.exports = {
 		// res.send(users)
 	},
 	login: async (req, res) => {
-		const user = await User.findOne({name: req.body.name});
+		var user = await User.findOne({name: req.body.name});
 		// send.res(user);
 		// return;
 		if(!user){
@@ -162,11 +170,12 @@ module.exports = {
 		}else{
 			try {
 				// bcrypt compare will prevent timing attack
-				const isMatch = await bcrypt.compare(req.body.password, user.pass);
+				const isMatch = await bcrypt.compare(req.body.pass, user.pass);
+				
 				if(isMatch){
 					//if match add JWT access token
 					// buat access dan refresh token
-					const tokens = generateToken(user.name);
+					const tokens = generateToken(user);
 					refreshTokens.push(tokens.refreshToken);
 					res.json({
 						status: true,
@@ -176,7 +185,7 @@ module.exports = {
 				}else{
 					res.json({
 						status: false,
-						message: 'Wrong password'
+						message: 'Wrong pass'
 					})
 				}
 			} catch (error) {
@@ -190,7 +199,7 @@ module.exports = {
 		if(!refreshTokens.includes(refreshToken)) return res.sendStatus(403)
 		jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
 			if(err) return res.sendStatus(403)
-			const accessToken = generateToken({name: user.name});
+			const accessToken = generateToken({name: user.name, kode: user.kode});
 			res.json({accessToken: accessToken.accessToken});
 		})
 	},
@@ -203,9 +212,17 @@ module.exports = {
 	}
 }
 
-function generateToken(user) {
-	const accessToken = jwt.sign({user: user}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '60s'});
-	const refreshToken = jwt.sign({user: user}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: '120s'});
+function generateToken(obj) {
+	const accessToken = jwt.sign({user: obj.name, kode: obj.kode}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '60s'});
+	const refreshToken = jwt.sign({user: obj.name, kode: obj.kode}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: '120s'});
 	return {accessToken, refreshToken};
 };
+
+function decodeToken(token){
+	if (token) {
+		const jwtoken = token.split(' ')[1]; //bearer[spasi]TOKEN
+		const a = jwt.decode(jwtoken, {complete: true});
+		return a;	// focus on payload
+	}
+}
 
