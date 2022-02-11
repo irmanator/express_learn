@@ -30,6 +30,7 @@ function JWTAccessCheck(req, res, next) {
 	// const authCookie = req.cookies.appCookie;
 	// if (authCookie) {
 	// 	const token = authCookie;
+
 	const authHeader = req.headers.authorization;
 	if (authHeader) {
 		const token = authHeader.split(' ')[1]; //bearer[spasi]TOKEN

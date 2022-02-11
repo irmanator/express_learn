@@ -17,7 +17,7 @@ let refreshTokens = [];
 module.exports = {
 	index: ((req, res) => {
 		const kodeuser = decodeToken(req.headers.authorization).payload.kode;
-		console.log(kodeuser); return;
+		// console.log(kodeuser); return;
 		if (kodeuser === 'bolpen'){ //kalo nemu Unauthorized brati ganti dari spidol ato bolpen
 		const userList = User.find({}, (err, users) => {
 			if(err) {
@@ -192,8 +192,8 @@ function generateToken(obj) {
 
 function decodeToken(token){
 	if (token) {
-		// const jwtoken = token.split(' ')[1]; //bearer[spasi]TOKEN
-		const a = jwt.decode(token, {complete: true});
+		const jwtoken = token.split(' ')[1]; //bearer[spasi]TOKEN
+		const a = jwt.decode(jwtoken, {complete: true});
 		return a;	// focus on payload
 	}
 }
