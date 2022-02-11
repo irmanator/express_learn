@@ -2,32 +2,28 @@ require('dotenv').config();
 
 const express = require('express');
 const mongoose = require('mongoose');
-const app = express();
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
+
+const app = express();
+
+app.use(cookieParser());
 
 app.use(
 	cors({
 		// origin: 'http://localhost:8080', //only allows specific url with port
 		origin: '*', //allows to all urls
-		methods:["GET", "POST","DELETE", "PUT"], //dah ga berlaku
+		methods:["GET", "POST","DELETE", "PUT"], //ditulis supaya ga kena XSS
+		// "OPTIONS", "HEAD", "CONNECT", "GET", "POST", "PUT", "DELETE", "PATCH",
 		credentials: true
 	})
 )
 
 const userRouter = require('./router/users.js');
 
-//connect to mongodb
-// try {
-// 	mongoose.connect(process.env.DB_URLUSER, { // yang DB_URLUSER mongodb cloud cuman bisa find, insert, update, TANPA delete
-// 		useNewUrlParser: true,
-// 		useUnifiedTopology: true
-// 	  }, () =>
-// 	  console.log("connected"));
-//   } catch (error) {
-// 	console.log("could not connect");
-//   } //dipindah ke dotenv
 try {
-	 mongoose.connect(process.env.DB_URLcardataadmin); //cek di .env
+	//  mongoose.connect(process.env.DB_URLcardataadmin); //cek di .env
+	 mongoose.connect(process.env.DB_URLUSER); //cek di .env
   } catch (error) {
 	handleError(error);
   }

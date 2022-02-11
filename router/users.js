@@ -5,15 +5,15 @@ const router = express.Router();
 
 const userController = require('../controllers/user.js');
 
+// user login
+router.post('/user/login', userController.login);
+
 // sudah di pindah dlm struktur MVC controller controller/user.js
 // proses update menggunakan model filter dari user/ID
 router.put('/user/:id', JWTAccessCheck, userController.update);
 
 // delete menggunakan parameter ID
 router.delete('/user/:id', JWTAccessCheck, userController.delete);
-
-// user login
-router.post('/user/login', userController.login);
 
 router.post('/token', userController.token);
 
@@ -26,8 +26,11 @@ router.route('/paket')
 
 //JWT with bearer TOKEN checking
 function JWTAccessCheck(req, res, next) {
-	const authHeader = req.headers.authorization;
 
+	// const authCookie = req.cookies.appCookie;
+	// if (authCookie) {
+	// 	const token = authCookie;
+	const authHeader = req.headers.authorization;
 	if (authHeader) {
 		const token = authHeader.split(' ')[1]; //bearer[spasi]TOKEN
 		jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {

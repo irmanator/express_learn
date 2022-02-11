@@ -1,6 +1,7 @@
 const md5 = require('md5');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const dayjs = require('dayjs');
 
 //users ini harusnya dari database dan masuk dalam model
 // let users = [
@@ -15,8 +16,10 @@ let refreshTokens = [];
 
 module.exports = {
 	index: ((req, res) => {
-		const kodeuser = decodeToken(req.headers.authorization).payload.kode;
-		if (kodeuser === 'spidol'){
+		console.log(req.cookies);
+		return;
+		const kodeuser = decodeToken(req.cookies.appCookie).payload.kode;
+		if (kodeuser === 'bolpen'){ //kalo nemu Unauthorized brati ganti dari spidol ato bolpen
 		const userList = User.find({}, (err, users) => {
 			if(err) {
 				console.log(err);
@@ -52,31 +55,6 @@ module.exports = {
 			console.log(error);
 		}
 
-		//cara 1
-		// const userData = new User({
-		// 	name: req.body.name,
-		// 	email: req.body.email,
-		// 	pass: md5(req.body.pass)	//mustinya harus di encrypt
-
-		// })
-		// userData.save((err, data) => {
-		// 	if(err){
-		// 		res.json({
-		// 			status: false,
-		// 			message: 'Failed to save data'
-		// 		})
-		// 	}else{
-		// 		res.json({
-		// 			status: true,
-		// 			data: data,
-		// 			method: req.method,
-		// 			url: req.url
-		// 		})
-		// 		console.log(data)
-		// 	}
-		// })
-
-		//cara 2, langsung pakai si Model, dlm hal ini User yang diimport dari models/user.js
 		User.create({
 			name: req.body.name,
 			email: req.body.email,
@@ -123,18 +101,6 @@ module.exports = {
 	})
 	}),
 
-	////manual mode
-	// users.filter(user => {
-	// 		if (user.id == id){
-	// 			user.id = id
-	// 			user.name = req.body.name
-	// 			user.email = req.body.email
-				
-	// 			return user;
-	// 		}
-	// 	})
-	// 	res.send(users)
-	// }),
 	delete: (req, res) => {
 	const id = req.params.id;
 		User.findByIdAndDelete(id, (err, user) => {
@@ -177,6 +143,11 @@ module.exports = {
 					// buat access dan refresh token
 					const tokens = generateToken(user);
 					refreshTokens.push(tokens.refreshToken);
+					res.cookie("appCookie", JSON.stringify(tokens.accessToken), {	// bikin httponly cookie
+						httpOnly: true,
+						expires: dayjs().add(1, "days").toDate(),
+						// secure: true, // khusus HTTPS
+					});
 					res.json({
 						status: true,
 						message: 'Login success',
@@ -208,20 +179,22 @@ module.exports = {
 		if(refreshToken == null) return res.sendStatus(401);
 		accessToken = null;
 		refreshTokens = refreshTokens.filter(token => token !== refreshToken);
-		res.sendStatus(204); //successfully delete token
+		return res.json({"status":"Successful logout"}).sendStatus(204); //successfully delete token
 	}
 }
 
 function generateToken(obj) {
-	const accessToken = jwt.sign({user: obj.name, kode: obj.kode}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '60s'});
-	const refreshToken = jwt.sign({user: obj.name, kode: obj.kode}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: '120s'});
-	return {accessToken, refreshToken};
+	const name = obj.name;
+	const kode = obj.kode;
+	const accessToken = jwt.sign({user: name, kode: kode}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '60s'});
+	const refreshToken = jwt.sign({user: name, kode: kode}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: '120s'});
+	return {accessToken, refreshToken, name, kode};
 };
 
 function decodeToken(token){
 	if (token) {
-		const jwtoken = token.split(' ')[1]; //bearer[spasi]TOKEN
-		const a = jwt.decode(jwtoken, {complete: true});
+		// const jwtoken = token.split(' ')[1]; //bearer[spasi]TOKEN
+		const a = jwt.decode(token, {complete: true});
 		return a;	// focus on payload
 	}
 }
