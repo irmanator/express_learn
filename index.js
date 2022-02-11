@@ -19,6 +19,7 @@ app.use(
 	})
 )
 
+//ngambil controller users.js
 const userRouter = require('./router/users.js');
 
 try {
@@ -33,28 +34,29 @@ db.once('open', function() {
 	console.log('connected to mongodb');
 });
 
-//cek middleware.js
-var myAllowedMethods = (req, res, next) => {
-	req.myTime = new Date() //variable middleware
-	const allowedMethods = [
-		"OPTIONS",
-		"HEAD",
-		"CONNECT",
-		"GET",
-		"POST",
-		"PUT",
-		"DELETE",
-		"PATCH",
-	  ];
+// //cek middleware.js proteksi anti XSS
+// var myAllowedMethods = (req, res, next) => {
+// 	req.myTime = new Date() //variable middleware
+// 	const allowedMethods = [
+// 		"OPTIONS",
+// 		"HEAD",
+// 		"CONNECT",
+// 		"GET",
+// 		"POST",
+// 		"PUT",
+// 		"DELETE",
+// 		"PATCH",
+// 	];
 	
-	  if (!allowedMethods.includes(req.method)) {
-		res.status(405).send(`${req.method} not allowed.`);
-	  }
-	next(); //next artinya jalankan si perintah utama
-}
+// 	if (!allowedMethods.includes(req.method)) {
+// 		res.status(405).send(`${req.method} not allowed.`);
+// 	}
+// 	console.log(req.cookies.appCookie)
+// 	next(); //next artinya jalankan si perintah utama
+// }
 
-//middleware ini akan dieksekusi SEBELUM pemanggilan fungsi berjalan
-app.use(myAllowedMethods);
+// // //middleware ini akan dieksekusi SEBELUM pemanggilan fungsi berjalan
+// app.use(myAllowedMethods);
 
 //feature parsing data yang masuk
 app.use(express.json());

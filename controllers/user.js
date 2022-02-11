@@ -2,6 +2,7 @@ const md5 = require('md5');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const dayjs = require('dayjs');
+const generateTokenx = require('../generateToken.js');
 
 //users ini harusnya dari database dan masuk dalam model
 // let users = [
@@ -15,6 +16,50 @@ const User = require('../models/user');
 let refreshTokens = [];
 
 module.exports = {
+	login: async (req, res) => {
+		const {name, pass} = req.body;
+
+		var user = await User.findOne({name: name});
+		// send.res(user);
+		// return;
+		if(!user){
+			res.json({
+				status: false,
+				message: 'User not found'
+			})
+		}else{
+			try {
+				// bcrypt compare will prevent timing attack
+				const isMatch = await bcrypt.compare(pass, user.pass);
+				
+				if(isMatch){
+					//if match add JWT access token
+					// buat access dan refresh token
+					
+					const tokens = generateToken(user);
+					refreshTokens.push(tokens.refreshToken);
+					res.cookie("appCookie", tokens.accessToken, {	// bikin httponly cookie
+						httpOnly: true,
+						expires: dayjs().add(1, "days").toDate()
+					});
+
+					res.json({
+						status: true,
+						message: 'Login success',
+						data: tokens
+					})
+					// await generateTokenx(res, user.name, user.kode);
+				}else{
+					res.json({
+						status: false,
+						message: 'Wrong pass'
+					})
+				}
+			} catch (error) {
+				console.log(error);
+			}
+		}
+	},
 	index: ((req, res) => {
 		const kodeuser = decodeToken(req.headers.authorization).payload.kode;
 		// console.log(kodeuser); return;
@@ -123,46 +168,6 @@ module.exports = {
 		// users = users.filter(user => user.id != id)
 		// res.send(users)
 	},
-	login: async (req, res) => {
-		var user = await User.findOne({name: req.body.name});
-		// send.res(user);
-		// return;
-		if(!user){
-			res.json({
-				status: false,
-				message: 'User not found'
-			})
-		}else{
-			try {
-				// bcrypt compare will prevent timing attack
-				const isMatch = await bcrypt.compare(req.body.pass, user.pass);
-				
-				if(isMatch){
-					//if match add JWT access token
-					// buat access dan refresh token
-					const tokens = generateToken(user);
-					refreshTokens.push(tokens.refreshToken);
-					res.cookie("appCookie", JSON.stringify(tokens.accessToken), {	// bikin httponly cookie
-						httpOnly: true,
-						expires: dayjs().add(1, "days").toDate(),
-						// secure: true, // khusus HTTPS
-					});
-					res.json({
-						status: true,
-						message: 'Login success',
-						data: tokens
-					})
-				}else{
-					res.json({
-						status: false,
-						message: 'Wrong pass'
-					})
-				}
-			} catch (error) {
-				console.log(error);
-			}
-		}
-	},
 	token: (req, res) => {
 		const refreshToken = req.body.token;
 		if(refreshToken == null) return res.sendStatus(401);
@@ -197,4 +202,3 @@ function decodeToken(token){
 		return a;	// focus on payload
 	}
 }
-
