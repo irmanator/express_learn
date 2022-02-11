@@ -16,9 +16,8 @@ let refreshTokens = [];
 
 module.exports = {
 	index: ((req, res) => {
-		console.log(req.cookies);
-		return;
-		const kodeuser = decodeToken(req.cookies.appCookie).payload.kode;
+		const kodeuser = decodeToken(req.headers.authorization).payload.kode;
+		console.log(kodeuser); return;
 		if (kodeuser === 'bolpen'){ //kalo nemu Unauthorized brati ganti dari spidol ato bolpen
 		const userList = User.find({}, (err, users) => {
 			if(err) {
